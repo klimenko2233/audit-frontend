@@ -1,6 +1,6 @@
 'use client';
 
-import { AuditResult } from '@/lib/types';
+import {AuditResult} from '@/lib/types';
 
 interface ResultsDisplayProps {
     result: AuditResult | null;
@@ -11,23 +11,24 @@ const severityColors = {
     CRITICAL: 'bg-red-100 text-red-800 border-red-200',
     HIGH: 'bg-orange-100 text-orange-800 border-orange-200',
     MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    LOW: 'bg-blue-100 text-blue-800 border-blue-200',
+    LOW: 'bg-blue-100 text-blue-800 border-blue-200'
 };
 
 const severityLabels = {
     CRITICAL: 'Критическая',
     HIGH: 'Высокая',
     MEDIUM: 'Средняя',
-    LOW: 'Низкая',
+    LOW: 'Низкая'
 };
 
-export default function ResultsDisplay({ result, error }: ResultsDisplayProps) {
+export default function ResultsDisplay({result, error}: ResultsDisplayProps) {
     if (error) {
         return (
             <div className="border border-red-300 bg-red-50 rounded-lg p-6">
                 <div className="flex items-center text-red-800">
                     <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <h3 className="text-lg font-semibold">Ошибка</h3>
                 </div>
@@ -51,7 +52,19 @@ export default function ResultsDisplay({ result, error }: ResultsDisplayProps) {
     return (
         <div className="space-y-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">📊 Сводка аудита</h3>
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-lg font-semibold">📊 Сводка аудита</h3>
+                    {result.riskScore && (
+                        <div className="bg-gray-100 px-3 py-1 rounded-full">
+                            <span className="font-medium">Риск:</span>
+                            <span
+                                className={`ml-2 font-bold ${result.riskScore > 70 ? 'text-red-600' : result.riskScore > 40 ? 'text-orange-600' : 'text-green-600'}`}>
+                {result.riskScore}/100
+              </span>
+                        </div>
+                    )}
+                </div>
+
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-gray-50 border border-gray-200 rounded p-4 text-center">
                         <div className="text-2xl font-bold">{result.summary.total}</div>
@@ -76,6 +89,31 @@ export default function ResultsDisplay({ result, error }: ResultsDisplayProps) {
                 </div>
             </div>
 
+            {result.defiChecks && result.defiChecks.length > 0 && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-purple-800 mb-4">🔄 DeFi-специфичные проверки</h3>
+                    <div className="space-y-3">
+                        {result.defiChecks.map((check, index) => (
+                            <div key={index} className="bg-white border border-purple-100 rounded p-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <span className="font-semibold text-purple-700">{check.type}</span>
+                                        <span
+                                            className={`ml-3 px-2 py-1 rounded text-xs font-medium ${severityColors[check.severity]}`}>
+                      {severityLabels[check.severity]}
+                    </span>
+                                    </div>
+                                </div>
+                                <p className="text-sm mt-2 text-gray-700">{check.description}</p>
+                                <p className="text-sm mt-1">
+                                    <span className="font-medium">Рекомендация:</span> {check.recommendation}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {result.vulnerabilities.length > 0 ? (
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold">🔍 Найденные уязвимости</h3>
@@ -86,11 +124,22 @@ export default function ResultsDisplay({ result, error }: ResultsDisplayProps) {
                         >
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                    <div className="flex items-center mb-2">
+                                    <div className="flex items-center mb-2 flex-wrap gap-2">
                                         <span className="font-semibold mr-3">{vuln.type}</span>
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${severityColors[vuln.severity]}`}>
+                                        <span
+                                            className={`px-2 py-1 rounded text-xs font-medium ${severityColors[vuln.severity]}`}>
                       {severityLabels[vuln.severity]}
                     </span>
+                                        {vuln.confidence && (
+                                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                        Уверенность: {vuln.confidence}
+                      </span>
+                                        )}
+                                        {vuln.detector && (
+                                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+                        Детектор: {vuln.detector}
+                      </span>
+                                        )}
                                     </div>
                                     <p className="text-sm mb-2">{vuln.description}</p>
                                     <p className="text-sm">

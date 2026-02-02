@@ -4,6 +4,8 @@ export interface Vulnerability {
     line: number;
     description: string;
     recommendation: string;
+    confidence?: string;
+    detector?: string;
 }
 
 export interface AuditResult {
@@ -15,9 +17,19 @@ export interface AuditResult {
         medium: number;
         low: number;
     };
+    defiChecks?: DeFiCheck[];
+    riskScore?: number;
+}
+
+export interface DeFiCheck {
+    type: string;
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    description: string;
+    recommendation: string;
 }
 
 export interface AuditRequest {
     code: string;
     contractName?: string;
+    analyzeDefi?: boolean;
 }
